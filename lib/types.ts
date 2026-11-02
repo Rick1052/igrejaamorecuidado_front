@@ -9,7 +9,7 @@ export type SiteData = {
     men: { title: string; date: string; url: string; desktopImage: string; mobileImage: string; cardImage: string };
     women: { title: string; date: string; url: string; desktopImage: string; mobileImage: string; cardImage: string };
   };
-  hero: { eyebrow: string; title: string; description: string; primaryCta: string; secondaryCta: string };
+  hero: { image: string; mobileImage: string; eyebrow: string; title: string; description: string; primaryCta: string; secondaryCta: string };
   services: Service[];
   sermons: Sermon[];
   instagramPosts: InstagramPost[];

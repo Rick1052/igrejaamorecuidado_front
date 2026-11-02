@@ -1,7 +1,6 @@
 "use client";
 
 import { ArrowLeft, ArrowRight, Play } from "lucide-react";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import type { SiteData } from "@/lib/types";
 
@@ -51,7 +50,10 @@ export function HeroSlider({ data }: { data: SiteData }) {
     </article>}
 
     <article className={`hero-slide institutional-slide ${active === institutionalIndex ? "is-active" : ""}`} aria-hidden={active !== institutionalIndex}>
-      <Image src="/hero-worship.png" alt="Comunidade reunida em um momento de adoração" fill priority={!hasConference && !hasFaceToFace} sizes="100vw" />
+      <picture className="institutional-picture">
+        <source media="(max-width: 600px)" srcSet={data.hero.mobileImage} />
+        <img src={data.hero.image} alt="Comunidade reunida em um momento de adoração" fetchPriority={!hasConference && !hasFaceToFace ? "high" : "auto"} />
+      </picture>
       <div className="hero-shade" />
       <div className="hero-content wrap">
         <p className="eyebrow">{data.hero.eyebrow}</p>

@@ -12,7 +12,7 @@ export async function proxyApiRequest(path: string, request?: Request) {
     const response = await fetch(`${SERVER_API_URL}${path}`, {
       method: request?.method || "GET",
       headers,
-      body: request && !["GET", "HEAD"].includes(request.method) ? await request.text() : undefined,
+      body: request && !["GET", "HEAD"].includes(request.method) ? await request.arrayBuffer() : undefined,
       cache: "no-store",
       signal: AbortSignal.timeout(10000)
     });

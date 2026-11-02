@@ -1,6 +1,9 @@
 import { ArrowRight, Clock3, HeartHandshake, Instagram, MapPin, UsersRound, Youtube } from "lucide-react";
 import { getSiteData } from "@/lib/api";
-import { Logo } from "@/components/logo";
+import { Logo, LogoSymbol } from "@/components/logo";
+import { ScrollEffects } from "@/components/scroll-effects";
+import { BrandMarquee } from "@/components/brand-marquee";
+import { SplitWords } from "@/components/split-words";
 import { SiteHeader } from "@/components/site-header";
 import { HeroSlider } from "@/components/hero-slider";
 import { CellMap } from "@/components/cell-map";
@@ -11,13 +14,14 @@ import { FaceToFaceSection } from "@/components/face-to-face-section";
 export default async function Home() {
   const data = await getSiteData();
   return <main>
+    <ScrollEffects />
     {data.announcement.enabled && <a className="announcement" href={data.announcement.url} target="_blank" rel="noreferrer">
       <span className="announcement-kicker">{data.announcement.eyebrow}</span>
       <span>{data.announcement.title}</span>
       <strong>{data.announcement.date} <ArrowRight size={16} /></strong>
     </a>}
 
-    <section className="hero" id="inicio">
+    <section className="hero" id="inicio" data-collapse>
       <HeroSlider data={data} />
       <SiteHeader />
     </section>
@@ -25,7 +29,7 @@ export default async function Home() {
     <section className="intro section wrap" id="sobre">
       <p className="eyebrow dark">BEM-VINDO À IAC</p>
       <div className="intro-grid">
-        <h2>Você não precisa<br />caminhar <em>sozinho.</em></h2>
+        <h2 className="split-title"><SplitWords text="Você não precisa" /><br /><SplitWords text="caminhar" offset={3} /> <em><SplitWords text="sozinho." offset={4} /></em></h2>
         <div><p>Somos uma família que acredita no poder do amor, da presença e do cuidado. Aqui, cada história importa e todo mundo tem lugar à mesa.</p><a className="text-link" href={data.links.instagramChurch} target="_blank" rel="noreferrer">Conheça nossa comunidade <ArrowRight /></a></div>
       </div>
       <div className="values">
@@ -35,7 +39,9 @@ export default async function Home() {
       </div>
     </section>
 
-    <section className="schedule section" id="agenda">
+    <BrandMarquee />
+
+    <section className="schedule section" id="agenda" data-expand>
       <div className="wrap"><div className="section-heading"><div><p className="eyebrow">NOS ENCONTRAMOS TODA SEMANA</p><h2>Sempre tem um<br /><em>lugar para você.</em></h2></div><Clock3 /></div>
       <div className="service-list">{data.services.map((service, index) => <article key={`${service.day}-${index}`}><span className="service-number">0{index + 1}</span><div><p>{service.day}</p><h3>{service.title}</h3></div><strong>{service.time}</strong><span>{service.note}</span></article>)}</div></div>
     </section>
@@ -52,7 +58,7 @@ export default async function Home() {
 
     <FaceToFaceSection data={data.faceToFace} />
 
-    <section className="visit section" id="visita"><div className="wrap visit-grid">
+    <section className="visit section" id="visita" data-expand><div className="visit-symbol" data-parallax="0.18" aria-hidden="true"><LogoSymbol /></div><div className="wrap visit-grid">
       <div><p className="eyebrow">SUA PRIMEIRA VEZ?</p><h2>Chegue como está.<br /><em>A casa é sua.</em></h2><p>Queremos deixar sua primeira visita leve e especial. Se tiver qualquer dúvida, fale com a nossa equipe.</p><div className="visit-actions"><a className="button button-warm" href={`https://wa.me/${data.contact.whatsapp}`} target="_blank" rel="noreferrer">Falar com a equipe <ArrowRight /></a><a className="visit-address" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.contact.address)}`} target="_blank" rel="noreferrer"><MapPin />{data.contact.address}</a></div></div>
       <div className="visit-quote"><span>“</span><p>Onde há amor,<br />há um lugar<br />para recomeçar.</p></div>
     </div></section>

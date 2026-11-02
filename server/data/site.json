@@ -1,0 +1,99 @@
+{
+  "announcement": {
+    "enabled": true,
+    "eyebrow": "IAC CONFERENCE",
+    "title": "O Mover do Espírito Santo",
+    "date": "10 a 13 de setembro",
+    "url": "https://doity.com.br/iac-conference",
+    "image": "/iac-conference-banner.jpeg",
+    "mobileImage": "/iac-conference-banner-mobile.jpeg"
+  },
+  "faceToFace": {
+    "enabled": true,
+    "eyebrow": "ENCONTRO COM DEUS",
+    "title": "Face a Face",
+    "description": "Um encontro preparado para viver dias de transformação, cura e uma experiência profunda com a presença de Deus.",
+    "men": {
+      "title": "Face a Face Homens",
+      "date": "17 e 18 de outubro",
+      "url": "https://ongetty.com.br/detalhe-evento/face-a-face-homens-guarapuava-1",
+      "desktopImage": "/face-a-face-homens-desktop.jpeg",
+      "mobileImage": "/face-a-face-homens-mobile.jpeg",
+      "cardImage": "/face-a-face-homens-card.jpeg"
+    },
+    "women": {
+      "title": "Face a Face Mulheres",
+      "date": "19 e 20 de setembro",
+      "url": "https://ongetty.com.br/detalhe-evento/face-a-face-mulheres-guarapuava-1",
+      "desktopImage": "/face-a-face-mulheres-desktop.jpeg",
+      "mobileImage": "/face-a-face-mulheres-mobile.jpeg",
+      "cardImage": "/face-a-face-mulheres-card.jpeg"
+    }
+  },
+  "hero": {
+    "eyebrow": "IGREJA AMOR E CUIDADO • GUARAPUAVA",
+    "title": "Um lugar para chamar de casa.",
+    "description": "Gente cuidando de gente, vivendo o amor de Jesus e transformando histórias.",
+    "primaryCta": "Planeje sua visita",
+    "secondaryCta": "Assista às ministrações"
+  },
+  "services": [
+    {
+      "day": "Domingo",
+      "title": "Celebrações",
+      "time": "10h e 19h30",
+      "note": "Para toda a família"
+    },
+    {
+      "day": "Terça-feira",
+      "title": "Oração",
+      "time": "18h30 às 19h30",
+      "note": "Um tempo de intercessão"
+    },
+    {
+      "day": "Quarta-feira",
+      "title": "Células",
+      "time": "20h",
+      "note": "Encontre uma perto de você"
+    },
+    {
+      "day": "Sábado",
+      "title": "Alive",
+      "time": "20h",
+      "note": "Culto de jovens"
+    }
+  ],
+  "sermons": [
+    {
+      "title": "O poder da Intimidade | Pastor Erik Farley",
+      "speaker": "Pastor Erik Farley",
+      "url": "https://www.youtube.com/watch?v=yDL07YEnOwM",
+      "thumbnail": "https://i2.ytimg.com/vi/yDL07YEnOwM/hqdefault.jpg"
+    },
+    {
+      "title": "A Presença | Pastor Erik Farley",
+      "speaker": "Pastor Erik Farley",
+      "url": "https://www.youtube.com/watch?v=-WCT-Hsz52U",
+      "thumbnail": "https://i2.ytimg.com/vi/-WCT-Hsz52U/hqdefault.jpg"
+    },
+    {
+      "title": "Série: Uma vida abençoada - Abençoados para abençoar | Pastor Erik Farley",
+      "speaker": "Pastor Erik Farley",
+      "url": "https://www.youtube.com/watch?v=zcukbcM0Ugk",
+      "thumbnail": "https://i3.ytimg.com/vi/zcukbcM0Ugk/hqdefault.jpg"
+    }
+  ],
+  "cells": [{"id":"alto-cascavel-dennis","name":"Alto Cascavel / João Gelinski","leaders":"Dênnis e Bruna","address":"Rua Terezinha de Lourdes Zampier Rodrigues, 67, Guarapuava, PR","phone":"(42) 99973-1003","lat":-25.3989513,"lng":-51.5116578},{"id":"batel-daniel","name":"Batel","leaders":"Daniel e Rayane","address":"Rua Resende, 516, Guarapuava, PR","phone":"(42) 99914-7304","lat":-25.4010542,"lng":-51.4833773},{"id":"morro-alto-jorge","name":"Morro Alto","leaders":"Jorge e Jhéssica","address":"Rua Dário Ferreira Caldas, 71, Guarapuava, PR","phone":"(42) 99973-7702","lat":-25.3702199,"lng":-51.4428341},{"id":"centro-cassio","name":"Centro","leaders":"Cássio","address":"Rua Cônego Braga, 417, Guarapuava, PR","phone":"(42) 99848-6757","lat":-25.391251,"lng":-51.4715305},{"id":"cascavel-paulo","name":"Cascavel","leaders":"Paulo e Ana","address":"Av. Dr. Aragão Matos Leão Filho, 969, Guarapuava, PR","phone":"(42) 99950-5114","lat":-25.3922445,"lng":-51.4927133},{"id":"centro-fernando","name":"Centro","leaders":"Fernando Sagati","address":"Rua Dr. Laranjeiras, 84, Guarapuava, PR","phone":"(42) 98413-5248","lat":-25.3995251,"lng":-51.4775701},{"id":"alto-da-xv-vagner","name":"Alto da XV","leaders":"Vagner e Gra","address":"Rua Guaíra, 1534, Guarapuava, PR","phone":"(42) 98844-8185","lat":-25.4020299,"lng":-51.4786868},{"id":"porto-real-nathan","name":"Morro Alto / Cond. Porto Real","leaders":"Nathan e Elaine","address":"Rua dos Engenheiros, 2439, Casa 122, Guarapuava, PR","phone":"(42) 99134-2244","lat":-25.3546058,"lng":-51.435555},{"id":"boqueirao-glauber","name":"Boqueirão","leaders":"Glauber e Débora","address":"Rua Rinaldo Saciloto, 527, Guarapuava, PR","phone":"(42) 99834-7081","lat":-25.4184957,"lng":-51.4680127},{"id":"boqueirao-cesar","name":"Boqueirão","leaders":"César e Amanda","address":"Rua Marabá, 2933, Guarapuava, PR","phone":"(42) 99916-6397","lat":-25.4049934,"lng":-51.4844023},{"id":"vila-bela-valter","name":"Vila Bela","leaders":"Valter e Dirce","address":"Rua Borges de Medeiros, 209, Casa E, Guarapuava, PR","phone":"(42) 99103-2326","lat":-25.4080729,"lng":-51.4938217},{"id":"alto-cascavel-arnaldo","name":"Alto Cascavel / João Gelinski","leaders":"Arnaldo e Daniele","address":"Rua José Abraão Melhem, 970, Guarapuava, PR","phone":"(42) 99956-6492","lat":-25.3996076,"lng":-51.5110016},{"id":"morro-alto-camila","name":"Morro Alto","leaders":"Camila Martins","address":"Rua Dário Ferreira Caldas, 71, Guarapuava, PR","phone":"(42) 98888-6152","lat":-25.3702199,"lng":-51.4428341},{"id":"morro-alto-marcio","name":"Morro Alto","leaders":"Márcio Delera","address":"Rua Românico, 203, Guarapuava, PR","phone":"(42) 98842-2990","lat":-25.3704361,"lng":-51.447531},{"id":"santa-cruz-josiel","name":"Santa Cruz","leaders":"Josiel","address":"Rua Cel. Luís Lustosa, 1507, Guarapuava, PR","phone":"(42) 98855-0456","lat":-25.3992776,"lng":-51.4805086},{"id":"santa-cruz-willian","name":"Santa Cruz","leaders":"Willian e Isabella","address":"Rua 5 de Outubro, 1866, Guarapuava, PR","phone":"(42) 99142-7236","lat":-25.4009908,"lng":-51.4584999},{"id":"trianon-jaqueline","name":"Trianon","leaders":"Jaqueline Novis","address":"Rua Capitão Rocha, 694, Guarapuava, PR","phone":"(42) 99915-3669","lat":-25.3787854,"lng":-51.4850219},{"id":"santa-regina-cristiano","name":"Cascavel / Santa Regina","leaders":"Cristiano e Simone","address":"Rua Vereador Generoso Florentino da Costa, 40, Guarapuava, PR","phone":"(42) 97602-3272","lat":-25.37239505,"lng":-51.47882855},{"id":"bonsucesso-kimberly","name":"Bonsucesso","leaders":"Kimberly","address":"Rua Romeu Karpinski Rocha, 3736, Guarapuava, PR","phone":"(42) 98801-7180","lat":-25.3760769,"lng":-51.4773996},{"id":"rodovia-364-marcio","name":"Rodovia 364","leaders":"Marcio Meira de Oliveira","address":"Chácara de Reabilitação Amor e Atitude, Bananas, Guarapuava, PR","phone":"(42) 99820-0463","lat":-25.3912817,"lng":-51.44791595},{"id":"centro-lucas","name":"Centro","leaders":"Lucas Bisca e Maria Vitória","address":"Rua Senador Pinheiro Machado, 1208, Ed. Golden Garden, Guarapuava, PR","phone":"(43) 99820-8979","lat":-25.3927986,"lng":-51.464209},{"id":"estados-lucas","name":"Bairro dos Estados","leaders":"Lucas Urba, Sabrina e Lívia","address":"Rua dos Falcões, 63, Guarapuava, PR","phone":"(42) 99999-9951","lat":-25.3807659,"lng":-51.4710895},{"id":"vila-carli-gui","name":"Vila Carli","leaders":"Gui Martins","address":"Rua Regente Feijó, 854, Guarapuava, PR","phone":"(42) 98867-9183","lat":-25.3723407,"lng":-51.4845266},{"id":"bonsucesso-carlos","name":"Bonsucesso","leaders":"Carlos e Flávia","address":"Rua Casemiro Rozmovski, 191, Guarapuava, PR","phone":"(42) 98403-9964","lat":-25.372579,"lng":-51.4807809},{"id":"boqueirao-jussimar","name":"Boqueirão","leaders":"Jussimar e Isabella","address":"Rua São Mateus do Sul, 75, Guarapuava, PR","phone":"(42) 99934-9802","lat":-25.4057009,"lng":-51.4783753},{"id":"centro-arthur","name":"Centro","leaders":"Arthur","address":"Rua XV de Novembro, 7647, Guarapuava, PR","phone":"(42) 98889-3422","lat":-25.3900552,"lng":-51.4624872},{"id":"centro-antonio","name":"Centro","leaders":"Antônio Marcos e Luize","address":"Rua Tiradentes, 1109, Apto 101, Ed. San Miguel, Guarapuava, PR","phone":"(42) 99106-9923","lat":-25.4010637,"lng":-51.4660752},{"id":"sao-cristovao-jessica","name":"São Cristóvão","leaders":"Jéssica e Valéria","address":"Rua Fênix, 170, Guarapuava, PR","phone":"(42) 99838-6902","lat":-25.3630564,"lng":-51.4576407},{"id":"vila-bela-kenedy","name":"Vila Bela","leaders":"Kenedy e Crys","address":"Rua Leoni de Lima, 144, Guarapuava, PR","phone":"(42) 99144-3397","lat":-25.3998811,"lng":-51.4922965},{"id":"pinheirinho-luis","name":"Jardim Pinheirinho","leaders":"Luís e Rosângela","address":"Rua Fredolin Worn, 179, Guarapuava, PR","phone":"(42) 99829-1083","lat":-25.3959519,"lng":-51.4903414},{"id":"boqueirao-robson","name":"Boqueirão","leaders":"Robson e Jana","address":"Rua Marabá, 2765, Guarapuava, PR","phone":"(42) 99952-4499","lat":-25.4049934,"lng":-51.4844023}],
+  "links": {
+    "instagramChurch": "https://www.instagram.com/iacguarapuava/",
+    "instagramPastor": "https://www.instagram.com/erikfarley/",
+    "youtube": "https://www.youtube.com/@IACGuarapuava",
+    "cells": "https://link-iac.my.canva.site/celulas",
+    "linktree": "https://linktr.ee/iacguarapuava",
+    "conference": "https://doity.com.br/iac-conference"
+  },
+  "contact": {
+    "address": "R. XV de Novembro, 7647 — Centro, Guarapuava — PR",
+    "whatsapp": "5542984283135"
+  }
+}
