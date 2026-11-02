@@ -44,7 +44,9 @@ const siteSchema = z.object({
   sermons: z.array(sermonSchema),
   cells: z.array(cellSchema),
   links: z.object({ instagramChurch: z.url(), instagramPastor: z.url(), youtube: z.url(), cells: z.url(), linktree: z.url(), conference: z.url() }),
-  contact: z.object({ address: z.string().min(1), whatsapp: z.string() })
+  contact: z.object({ address: z.string().min(1), whatsapp: z.string() }),
+  giving: z.object({ enabled: z.boolean(), title: z.string().min(1), description: z.string(), pixKeyType: z.enum(["CNPJ", "CPF", "E-mail", "Telefone", "Chave aleatória"]), pixKey: z.string(), bankName: z.string(), agency: z.string(), account: z.string(), accountHolder: z.string(), document: z.string() })
+    .default({"enabled": false, "title": "Ofertas e contribuições", "description": "Sua generosidade sustenta a obra, alcança vidas e mantém as portas da nossa casa abertas. Contribua com alegria pelo PIX ou por transferência.", "pixKeyType": "CNPJ", "pixKey": "", "bankName": "", "agency": "", "account": "", "accountHolder": "", "document": ""})
 });
 
 async function readSite() {

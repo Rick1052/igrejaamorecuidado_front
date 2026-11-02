@@ -10,9 +10,12 @@ import { CellMap } from "@/components/cell-map";
 import { SermonGallery } from "@/components/sermon-gallery";
 import { InstagramFeed } from "@/components/instagram-feed";
 import { FaceToFaceSection } from "@/components/face-to-face-section";
+import { GivingSection } from "@/components/giving-section";
+import { hasGivingDetails } from "@/lib/site-data";
 
 export default async function Home() {
   const data = await getSiteData();
+  const showGiving = hasGivingDetails(data.giving);
   return <main>
     <ScrollEffects />
     {data.announcement.enabled && <a className="announcement" href={data.announcement.url} target="_blank" rel="noreferrer">
@@ -23,7 +26,7 @@ export default async function Home() {
 
     <section className="hero" id="inicio" data-collapse>
       <HeroSlider data={data} />
-      <SiteHeader />
+      <SiteHeader showGiving={showGiving} />
     </section>
 
     <section className="intro section wrap" id="sobre">
@@ -63,8 +66,10 @@ export default async function Home() {
       <div className="visit-quote"><span>“</span><p>Onde há amor,<br />há um lugar<br />para recomeçar.</p></div>
     </div></section>
 
+    <GivingSection data={data.giving} />
+
     <InstagramFeed posts={data.instagramPosts} profileUrl={data.links.instagramChurch} />
 
-    <footer><div className="wrap footer-grid"><div><Logo light /><p>Gente cuidando de gente.</p></div><div><h3>Conecte-se</h3><a href={data.links.instagramChurch}>Instagram da igreja</a><a href={data.links.instagramPastor}>Pr. Erik Farley</a><a href={data.links.youtube}>YouTube</a></div><div><h3>Explore</h3><a href="#celulas">Encontre uma célula</a><a href={data.links.linktree}>Todos os links</a></div><div className="social"><a href={data.links.instagramChurch} aria-label="Instagram"><Instagram /></a><a href={data.links.youtube} aria-label="YouTube"><Youtube /></a></div></div><div className="wrap footer-bottom"><span>© 2026 IAC Guarapuava</span><a href="/admin">Área administrativa</a></div></footer>
+    <footer><div className="wrap footer-grid"><div><Logo light /><p>Gente cuidando de gente.</p></div><div><h3>Conecte-se</h3><a href={data.links.instagramChurch}>Instagram da igreja</a><a href={data.links.instagramPastor}>Pr. Erik Farley</a><a href={data.links.youtube}>YouTube</a></div><div><h3>Explore</h3><a href="#celulas">Encontre uma célula</a>{showGiving && <a href="#contribua">Ofertas e contribuições</a>}<a href={data.links.linktree}>Todos os links</a></div><div className="social"><a href={data.links.instagramChurch} aria-label="Instagram"><Instagram /></a><a href={data.links.youtube} aria-label="YouTube"><Youtube /></a></div></div><div className="wrap footer-bottom"><span>© 2026 IAC Guarapuava</span><a href="/admin">Área administrativa</a></div></footer>
   </main>;
 }

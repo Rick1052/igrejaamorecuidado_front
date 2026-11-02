@@ -4,7 +4,7 @@ import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { Logo } from "./logo";
 
-export function SiteHeader() {
+export function SiteHeader({ showGiving = false }: { showGiving?: boolean }) {
   const [open, setOpen] = useState(false);
   return <header className="site-header">
     <a href="#inicio"><Logo light /></a>
@@ -14,6 +14,7 @@ export function SiteHeader() {
       <a href="#agenda" onClick={() => setOpen(false)}>Agenda</a>
       <a href="#mensagens" onClick={() => setOpen(false)}>Mensagens</a>
       <a href="#celulas" onClick={() => setOpen(false)}>Células</a>
+      {showGiving && <a href="#contribua" onClick={() => setOpen(false)}>Contribua</a>}
       <a className="nav-cta" href="#visita" onClick={() => setOpen(false)}>Vou visitar</a>
     </nav>
   </header>;

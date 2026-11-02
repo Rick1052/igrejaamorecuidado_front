@@ -95,5 +95,17 @@
   "contact": {
     "address": "R. XV de Novembro, 7647 — Centro, Guarapuava — PR",
     "whatsapp": "5542984283135"
+  },
+  "giving": {
+    "enabled": false,
+    "title": "Ofertas e contribuições",
+    "description": "Sua generosidade sustenta a obra, alcança vidas e mantém as portas da nossa casa abertas. Contribua com alegria pelo PIX ou por transferência.",
+    "pixKeyType": "CNPJ",
+    "pixKey": "",
+    "bankName": "",
+    "agency": "",
+    "account": "",
+    "accountHolder": "",
+    "document": ""
   }
 }
