@@ -1,21 +1,23 @@
 "use client";
 
-import { Menu, X } from "lucide-react";
+import { ArrowUpRight, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { isExternalUrl, resolveHref } from "@/lib/site-data";
+import type { MenuItem } from "@/lib/types";
 import { Logo } from "./logo";
 
-export function SiteHeader({ showGiving = false }: { showGiving?: boolean }) {
+export function SiteHeader({ menu, onHome = true }: { menu: MenuItem[]; onHome?: boolean }) {
   const [open, setOpen] = useState(false);
   return <header className="site-header">
-    <a href="#inicio"><Logo light /></a>
+    <a href={onHome ? "#inicio" : "/"}><Logo light /></a>
     <button className="menu-button" aria-label={open ? "Fechar menu" : "Abrir menu"} aria-expanded={open} onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button>
     <nav className={open ? "nav-open" : ""} aria-label="Navegação principal">
-      <a href="#sobre" onClick={() => setOpen(false)}>Quem somos</a>
-      <a href="#agenda" onClick={() => setOpen(false)}>Agenda</a>
-      <a href="#mensagens" onClick={() => setOpen(false)}>Mensagens</a>
-      <a href="#celulas" onClick={() => setOpen(false)}>Células</a>
-      {showGiving && <a href="#contribua" onClick={() => setOpen(false)}>Contribua</a>}
-      <a className="nav-cta" href="#visita" onClick={() => setOpen(false)}>Vou visitar</a>
+      {menu.map(item => {
+        const external = isExternalUrl(item.url);
+        return <a key={item.id} className={item.highlight ? "nav-cta" : undefined} href={resolveHref(item.url, onHome)} onClick={() => setOpen(false)} {...(external ? { target: "_blank", rel: "noreferrer" } : {})}>
+          {item.label}{external && <ArrowUpRight className="nav-external" aria-label="(abre em nova aba)" />}
+        </a>;
+      })}
     </nav>
   </header>;
 }

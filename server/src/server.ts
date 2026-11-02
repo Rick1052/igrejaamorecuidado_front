@@ -6,6 +6,7 @@ import { access, copyFile, mkdir, readdir, readFile, rename, stat, unlink, write
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
+import { migrateSite } from "./migrate.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // Em produção DATA_DIR aponta para um volume persistente; o site.json do repositório serve de conteúdo inicial.
@@ -32,25 +33,51 @@ const serviceSchema = z.object({ day: z.string().min(1), title: z.string().min(1
 const sermonSchema = z.object({ title: z.string().min(1), speaker: z.string(), url: z.url(), thumbnail: z.union([z.literal(""), z.url()]) });
 const cellSchema = z.object({ id: z.string().min(1), name: z.string().min(1), leaders: z.string(), address: z.string().min(1), phone: z.string(), lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) });
 const instagramResponseSchema = z.object({ data: z.array(z.object({ id: z.string(), caption: z.string().optional(), media_type: z.enum(["IMAGE", "VIDEO", "CAROUSEL_ALBUM"]), media_url: z.url(), thumbnail_url: z.url().optional(), permalink: z.url(), timestamp: z.string().optional() })) });
+// Âncora da página inicial (#agenda), página interna (/sobre), endereço externo ou contato.
+const linkUrl = z.string().regex(/^(#[\w-]+|\/[\w\-/]*|https?:\/\/\S+|mailto:\S+|tel:\S+)$/, "Use #secao, /pagina ou um endereço começando com https://");
+const id = z.string().min(1).max(80);
+const linkButtonSchema = z.object({ id, label: z.string().min(1), url: linkUrl });
+const bannerSchema = z.object({
+  id, enabled: z.boolean(), name: z.string().min(1), layout: z.enum(["art", "text"]),
+  desktopImage: z.string(), mobileImage: z.string(), eyebrow: z.string(), title: z.string(), description: z.string(),
+  buttons: z.array(linkButtonSchema).max(2)
+});
+const sectionSchema = z.object({
+  id: z.string().regex(/^[a-z0-9-]+$/), kind: z.enum(["about", "marquee", "schedule", "cells", "sermons", "faceToFace", "visit", "giving", "instagram", "content"]), enabled: z.boolean(),
+  eyebrow: z.string(), title: z.string(), text: z.string(), quote: z.string(), image: z.string(), theme: z.enum(["light", "soft", "dark"]),
+  buttons: z.array(linkButtonSchema), items: z.array(z.object({ id, title: z.string(), text: z.string() }))
+});
+const reservedSlugs = ["admin", "api", "uploads", "_next", "icon.svg"];
+const pageSchema = z.object({
+  id, slug: z.string().regex(/^[a-z0-9]+(-[a-z0-9]+)*$/, "O endereço da página deve ter só letras minúsculas, números e hífens").refine(slug => !reservedSlugs.includes(slug), "Esse endereço é reservado pelo sistema"),
+  title: z.string().min(1), description: z.string(), enabled: z.boolean(),
+  sections: z.array(sectionSchema.extend({ kind: z.literal("content") }))
+});
+const menuItemSchema = z.object({ id, label: z.string().min(1), url: linkUrl, highlight: z.boolean() });
+const faceEventSchema = z.object({ title: z.string().min(1), date: z.string(), url: z.url(), cardImage: z.string() });
 const siteSchema = z.object({
-  announcement: z.object({ enabled: z.boolean(), eyebrow: z.string(), title: z.string().min(1), date: z.string(), url: z.url(), image: z.string(), mobileImage: z.string() }),
-  faceToFace: z.object({
-    enabled: z.boolean(), eyebrow: z.string(), title: z.string().min(1), description: z.string(),
-    men: z.object({ title: z.string().min(1), date: z.string(), url: z.url(), desktopImage: z.string(), mobileImage: z.string(), cardImage: z.string() }),
-    women: z.object({ title: z.string().min(1), date: z.string(), url: z.url(), desktopImage: z.string(), mobileImage: z.string(), cardImage: z.string() })
-  }),
-  hero: z.object({ image: z.string().default("/hero-worship.png"), mobileImage: z.string().default("/hero-worship.png"), eyebrow: z.string(), title: z.string().min(1), description: z.string(), primaryCta: z.string(), secondaryCta: z.string() }),
+  banners: z.array(bannerSchema),
+  sections: z.array(sectionSchema),
+  pages: z.array(pageSchema),
+  menu: z.array(menuItemSchema),
+  faceToFace: z.object({ men: faceEventSchema, women: faceEventSchema }),
   services: z.array(serviceSchema).min(1),
   sermons: z.array(sermonSchema),
   cells: z.array(cellSchema),
   links: z.object({ instagramChurch: z.url(), instagramPastor: z.url(), youtube: z.url(), cells: z.url(), linktree: z.url(), conference: z.url() }),
   contact: z.object({ address: z.string().min(1), whatsapp: z.string() }),
-  giving: z.object({ enabled: z.boolean(), title: z.string().min(1), description: z.string(), pixKeyType: z.enum(["CNPJ", "CPF", "E-mail", "Telefone", "Chave aleatória"]), pixKey: z.string(), bankName: z.string(), agency: z.string(), account: z.string(), accountHolder: z.string(), document: z.string() })
-    .default({"enabled": false, "title": "Ofertas e contribuições", "description": "Sua generosidade sustenta a obra, alcança vidas e mantém as portas da nossa casa abertas. Contribua com alegria pelo PIX ou por transferência.", "pixKeyType": "CNPJ", "pixKey": "", "bankName": "", "agency": "", "account": "", "accountHolder": "", "document": ""})
+  giving: z.object({ pixKeyType: z.enum(["CNPJ", "CPF", "E-mail", "Telefone", "Chave aleatória"]), pixKey: z.string(), pixCopyPaste: z.string().default(""), qrCode: z.string().default(""), bankName: z.string(), agency: z.string(), account: z.string(), accountHolder: z.string(), document: z.string() })
+    .default({ pixKeyType: "CNPJ", pixKey: "", pixCopyPaste: "", qrCode: "", bankName: "", agency: "", account: "", accountHolder: "", document: "" })
+}).superRefine((site, context) => {
+  const duplicated = (values: string[]) => values.find((value, index) => values.indexOf(value) !== index);
+  const slug = duplicated(site.pages.map(page => page.slug));
+  if (slug) context.addIssue({ code: "custom", path: ["pages"], message: `Já existe uma página com o endereço /${slug}.` });
+  const sectionId = duplicated([...site.sections, ...site.pages.flatMap(page => page.sections)].map(section => section.id));
+  if (sectionId) context.addIssue({ code: "custom", path: ["sections"], message: `A seção ${sectionId} está duplicada.` });
 });
 
 async function readSite() {
-  return siteSchema.parse(JSON.parse(await readFile(dataFile, "utf8")));
+  return siteSchema.parse(migrateSite(JSON.parse(await readFile(dataFile, "utf8"))));
 }
 
 async function writeSite(data: z.infer<typeof siteSchema>) {
@@ -161,7 +188,7 @@ app.put("/api/site", async (request, response, next) => {
     return;
   }
   try {
-    const data = siteSchema.parse(request.body);
+    const data = siteSchema.parse(migrateSite(request.body));
     await writeSite(data);
     await removeUnusedUploads(data).catch(error => console.warn("Não foi possível limpar imagens antigas.", error));
     response.json(data);
@@ -194,7 +221,8 @@ app.post("/api/uploads", requireAdmin, express.raw({ type: () => true, limit: ma
 
 app.use((error: unknown, _request: express.Request, response: express.Response, _next: express.NextFunction) => {
   if (error instanceof z.ZodError) {
-    response.status(400).json({ message: "Revise os campos enviados.", issues: error.issues });
+    const first = error.issues[0];
+    response.status(400).json({ message: first ? `Revise os campos enviados: ${first.message} (${first.path.join(" › ")})` : "Revise os campos enviados.", issues: error.issues });
     return;
   }
   if (error && typeof error === "object" && "type" in error && error.type === "entity.too.large") {

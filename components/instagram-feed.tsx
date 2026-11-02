@@ -1,11 +1,12 @@
 import { ArrowUpRight, Instagram, Play } from "lucide-react";
-import type { InstagramPost } from "@/lib/types";
+import type { InstagramPost, Section } from "@/lib/types";
+import { RichTitle } from "./rich-text";
 
-export function InstagramFeed({ posts, profileUrl }: { posts: InstagramPost[]; profileUrl: string }) {
-  return <section className="instagram-section section" aria-labelledby="instagram-title">
+export function InstagramFeed({ section, posts, profileUrl }: { section: Section; posts: InstagramPost[]; profileUrl: string }) {
+  return <section className="instagram-section section" id={section.id} aria-labelledby="instagram-title">
     <div className="wrap">
       <div className="instagram-heading">
-        <div><p className="eyebrow dark">NOSSA SEMANA EM COMUNIDADE</p><h2 id="instagram-title">Acompanhe a IAC<br /><em>no Instagram.</em></h2></div>
+        <div>{section.eyebrow && <p className="eyebrow dark">{section.eyebrow}</p>}<h2 id="instagram-title"><RichTitle text={section.title} /></h2></div>
         <a className="button button-outline instagram-profile-link" href={profileUrl} target="_blank" rel="noreferrer"><Instagram /> @iacguarapuava <ArrowUpRight /></a>
       </div>
       {posts.length > 0 ? <div className="instagram-grid">
