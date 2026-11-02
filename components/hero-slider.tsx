@@ -5,8 +5,14 @@ import { useEffect, useState } from "react";
 import type { SiteData } from "@/lib/types";
 
 export function HeroSlider({ data }: { data: SiteData }) {
-  const hasConference = data.announcement.enabled;
-  const hasFaceToFace = data.faceToFace.enabled;
+  // Um banner sem imagem foi excluído no admin: o slide some em vez de aparecer quebrado.
+  const conferenceImage = data.announcement.image || data.announcement.mobileImage;
+  const conferenceMobileImage = data.announcement.mobileImage || data.announcement.image;
+  const hasConference = data.announcement.enabled && Boolean(conferenceImage);
+  const facePanels = [data.faceToFace.men, data.faceToFace.women].filter(event => event.desktopImage || event.mobileImage);
+  const hasFaceToFace = data.faceToFace.enabled && facePanels.length > 0;
+  const heroImage = data.hero.image || data.hero.mobileImage || "/hero-worship.png";
+  const heroMobileImage = data.hero.mobileImage || heroImage;
   const slides = 1 + Number(hasConference) + Number(hasFaceToFace);
   const [active, setActive] = useState(0);
 
@@ -27,12 +33,12 @@ export function HeroSlider({ data }: { data: SiteData }) {
 
   return <div className="hero-slider" aria-roledescription="carrossel" aria-label="Destaques da IAC">
     {hasConference && <article className={`hero-slide conference-slide ${active === 0 ? "is-active" : ""}`} aria-hidden={active !== 0}>
-      <div className="conference-backdrop conference-backdrop-desktop" style={{ backgroundImage: `url(${data.announcement.image})` }} />
-      <div className="conference-backdrop conference-backdrop-mobile" style={{ backgroundImage: `url(${data.announcement.mobileImage})` }} />
+      <div className="conference-backdrop conference-backdrop-desktop" style={{ backgroundImage: `url(${conferenceImage})` }} />
+      <div className="conference-backdrop conference-backdrop-mobile" style={{ backgroundImage: `url(${conferenceMobileImage})` }} />
       {/* A tag picture mantém URLs externas editáveis e escolhe a arte vertical no celular. */}
       <picture className="conference-picture">
-        <source media="(max-width: 600px)" srcSet={data.announcement.mobileImage} />
-        <img className="conference-art" src={data.announcement.image} alt={`Banner ${data.announcement.eyebrow}: ${data.announcement.title}, ${data.announcement.date}`} />
+        <source media="(max-width: 600px)" srcSet={conferenceMobileImage} />
+        <img className="conference-art" src={conferenceImage} alt={`Banner ${data.announcement.eyebrow}: ${data.announcement.title}, ${data.announcement.date}`} />
       </picture>
       <div className="conference-action wrap">
         <div><span>{data.announcement.date}</span><strong>Guarapuava • PR</strong></div>
@@ -41,9 +47,9 @@ export function HeroSlider({ data }: { data: SiteData }) {
     </article>}
 
     {hasFaceToFace && <article className={`hero-slide face-hero-slide ${active === faceToFaceIndex ? "is-active" : ""}`} aria-hidden={active !== faceToFaceIndex}>
-      <div className="face-hero-panels">
-        {([data.faceToFace.men, data.faceToFace.women] as const).map(event => <div className="face-hero-panel" key={event.title}>
-          <picture><source media="(max-width: 600px)" srcSet={event.mobileImage} /><img src={event.desktopImage} alt={`${event.title}, ${event.date}`} /></picture>
+      <div className="face-hero-panels" style={{ gridTemplateRows: `repeat(${facePanels.length}, 1fr)` }}>
+        {facePanels.map(event => <div className="face-hero-panel" key={event.title}>
+          <picture><source media="(max-width: 600px)" srcSet={event.mobileImage || event.desktopImage} /><img src={event.desktopImage || event.mobileImage} alt={`${event.title}, ${event.date}`} /></picture>
           <div className="face-hero-action"><span>{event.date}</span><a className="button" href={event.url} target="_blank" rel="noreferrer">Inscreva-se <ArrowRight /></a></div>
         </div>)}
       </div>
@@ -51,8 +57,8 @@ export function HeroSlider({ data }: { data: SiteData }) {
 
     <article className={`hero-slide institutional-slide ${active === institutionalIndex ? "is-active" : ""}`} aria-hidden={active !== institutionalIndex}>
       <picture className="institutional-picture">
-        <source media="(max-width: 600px)" srcSet={data.hero.mobileImage} />
-        <img src={data.hero.image} alt="Comunidade reunida em um momento de adoração" fetchPriority={!hasConference && !hasFaceToFace ? "high" : "auto"} />
+        <source media="(max-width: 600px)" srcSet={heroMobileImage} />
+        <img src={heroImage} alt="Comunidade reunida em um momento de adoração" fetchPriority={!hasConference && !hasFaceToFace ? "high" : "auto"} />
       </picture>
       <div className="hero-shade" />
       <div className="hero-content wrap">

@@ -2,7 +2,7 @@ import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 import { randomUUID } from "node:crypto";
-import { access, copyFile, mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { access, copyFile, mkdir, readdir, readFile, rename, stat, unlink, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
@@ -33,13 +33,13 @@ const sermonSchema = z.object({ title: z.string().min(1), speaker: z.string(), u
 const cellSchema = z.object({ id: z.string().min(1), name: z.string().min(1), leaders: z.string(), address: z.string().min(1), phone: z.string(), lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) });
 const instagramResponseSchema = z.object({ data: z.array(z.object({ id: z.string(), caption: z.string().optional(), media_type: z.enum(["IMAGE", "VIDEO", "CAROUSEL_ALBUM"]), media_url: z.url(), thumbnail_url: z.url().optional(), permalink: z.url(), timestamp: z.string().optional() })) });
 const siteSchema = z.object({
-  announcement: z.object({ enabled: z.boolean(), eyebrow: z.string(), title: z.string().min(1), date: z.string(), url: z.url(), image: z.string().min(1), mobileImage: z.string().min(1) }),
+  announcement: z.object({ enabled: z.boolean(), eyebrow: z.string(), title: z.string().min(1), date: z.string(), url: z.url(), image: z.string(), mobileImage: z.string() }),
   faceToFace: z.object({
     enabled: z.boolean(), eyebrow: z.string(), title: z.string().min(1), description: z.string(),
-    men: z.object({ title: z.string().min(1), date: z.string(), url: z.url(), desktopImage: z.string().min(1), mobileImage: z.string().min(1), cardImage: z.string().min(1) }),
-    women: z.object({ title: z.string().min(1), date: z.string(), url: z.url(), desktopImage: z.string().min(1), mobileImage: z.string().min(1), cardImage: z.string().min(1) })
+    men: z.object({ title: z.string().min(1), date: z.string(), url: z.url(), desktopImage: z.string(), mobileImage: z.string(), cardImage: z.string() }),
+    women: z.object({ title: z.string().min(1), date: z.string(), url: z.url(), desktopImage: z.string(), mobileImage: z.string(), cardImage: z.string() })
   }),
-  hero: z.object({ image: z.string().min(1).default("/hero-worship.png"), mobileImage: z.string().min(1).default("/hero-worship.png"), eyebrow: z.string(), title: z.string().min(1), description: z.string(), primaryCta: z.string(), secondaryCta: z.string() }),
+  hero: z.object({ image: z.string().default("/hero-worship.png"), mobileImage: z.string().default("/hero-worship.png"), eyebrow: z.string(), title: z.string().min(1), description: z.string(), primaryCta: z.string(), secondaryCta: z.string() }),
   services: z.array(serviceSchema).min(1),
   sermons: z.array(sermonSchema),
   cells: z.array(cellSchema),
@@ -56,6 +56,20 @@ async function writeSite(data: z.infer<typeof siteSchema>) {
   const temporary = `${dataFile}.tmp`;
   await writeFile(temporary, JSON.stringify(data, null, 2), "utf8");
   await rename(temporary, dataFile);
+}
+
+// Apaga do volume as imagens enviadas que o conteúdo publicado não usa mais.
+// Arquivos recentes são mantidos para não apagar um upload ainda não publicado em outra aba do admin.
+async function removeUnusedUploads(data: z.infer<typeof siteSchema>) {
+  const content = JSON.stringify(data);
+  const files = await readdir(uploadsDir).catch(() => [] as string[]);
+  const graceMs = 60 * 60 * 1000;
+  for (const file of files) {
+    if (content.includes(`/uploads/${file}`)) continue;
+    const path = resolve(uploadsDir, file);
+    const { mtimeMs } = await stat(path);
+    if (Date.now() - mtimeMs > graceMs) await unlink(path);
+  }
 }
 
 // Valida pela assinatura do arquivo, não pelo Content-Type enviado pelo navegador.
@@ -147,6 +161,7 @@ app.put("/api/site", async (request, response, next) => {
   try {
     const data = siteSchema.parse(request.body);
     await writeSite(data);
+    await removeUnusedUploads(data).catch(error => console.warn("Não foi possível limpar imagens antigas.", error));
     response.json(data);
   } catch (error) { next(error); }
 });
