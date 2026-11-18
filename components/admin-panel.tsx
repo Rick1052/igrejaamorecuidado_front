@@ -1,9 +1,10 @@
 "use client";
 
-import { ArrowLeft, Eye, LoaderCircle, LogOut, Plus, Save, Trash2 } from "lucide-react";
-import { FormEvent, useEffect, useState } from "react";
+import { ArrowLeft, Eye, HandHeart, LayoutTemplate, LoaderCircle, LogOut, Plus, Save, Trash2 } from "lucide-react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import { normalizeSiteData } from "@/lib/site-data";
-import { pixKeyTypes, type PixKeyType, type SiteData } from "@/lib/types";
+import { pixKeyTypes, type PixKeyType, type PrayerRequest, type PrayerStatus, type SiteData } from "@/lib/types";
+import { PrayersPanel } from "./admin/prayers-panel";
 import fallback from "@/data/fallback.json";
 import { Logo } from "./logo";
 import { BannersEditor } from "./admin/banners-editor";
@@ -23,12 +24,72 @@ export function AdminPanel() {
   const [data, setData] = useState<SiteData>(fallback as SiteData);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  // "#pedidos" abre a tela de pedidos de oração; qualquer outro endereço mostra o conteúdo do site.
+  const [view, setView] = useState<"content" | "prayers">("content");
+  const [prayers, setPrayers] = useState<PrayerRequest[]>([]);
+  const [prayersLoading, setPrayersLoading] = useState(false);
+  const [prayersError, setPrayersError] = useState("");
 
   useEffect(() => {
     const saved = sessionStorage.getItem("iac-admin-token");
     if (saved) setToken(saved);
     fetch("/api/admin/site", { cache: "no-store" }).then(r => r.ok ? r.json() : Promise.reject()).then(result => setData(normalizeSiteData(result))).catch(() => undefined);
+    const syncView = () => {
+      const prayersView = window.location.hash === "#pedidos";
+      setView(prayersView ? "prayers" : "content");
+      // A seção de destino só existe depois que a tela de conteúdo é desenhada de novo.
+      if (!prayersView && window.location.hash) requestAnimationFrame(() => document.querySelector(window.location.hash)?.scrollIntoView());
+    };
+    syncView();
+    window.addEventListener("hashchange", syncView);
+    return () => window.removeEventListener("hashchange", syncView);
   }, []);
+
+  const logout = useCallback(() => { sessionStorage.removeItem("iac-admin-token"); setToken(""); }, []);
+
+  const loadPrayers = useCallback(async () => {
+    if (!token) return;
+    setPrayersLoading(true);
+    try {
+      const response = await fetch("/api/admin/prayers", { cache: "no-store", headers: { Authorization: `Bearer ${token}` } });
+      const result = await response.json();
+      if (response.status === 401) { logout(); return; }
+      if (!response.ok) throw new Error(result.message);
+      setPrayers(result); setPrayersError("");
+    } catch (error) {
+      setPrayersError(error instanceof Error && error.message ? error.message : "Não foi possível carregar os pedidos.");
+    } finally { setPrayersLoading(false); }
+  }, [token, logout]);
+
+  useEffect(() => {
+    if (!token) return;
+    loadPrayers();
+    const timer = window.setInterval(loadPrayers, 60_000);
+    return () => window.clearInterval(timer);
+  }, [token, loadPrayers]);
+
+  async function changePrayer(id: string, init: RequestInit) {
+    const response = await fetch(`/api/admin/prayers/${encodeURIComponent(id)}`, { ...init, headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` } });
+    if (response.status === 401) { logout(); return null; }
+    if (!response.ok) {
+      const result = await response.json().catch(() => ({}));
+      setPrayersError(result.message || "Não foi possível atualizar o pedido.");
+      return null;
+    }
+    setPrayersError("");
+    return response;
+  }
+
+  async function setPrayerStatus(id: string, status: PrayerStatus) {
+    const response = await changePrayer(id, { method: "PATCH", body: JSON.stringify({ status }) });
+    if (response) { const updated: PrayerRequest = await response.json(); setPrayers(list => list.map(prayer => prayer.id === id ? updated : prayer)); }
+  }
+
+  async function deletePrayer(id: string) {
+    if (await changePrayer(id, { method: "DELETE" })) setPrayers(list => list.filter(prayer => prayer.id !== id));
+  }
+
+  const newPrayers = prayers.filter(prayer => prayer.status === "new").length;
 
   async function login(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setLoading(true); setMessage("");
@@ -58,8 +119,20 @@ export function AdminPanel() {
 
   const update = <K extends keyof SiteData>(key: K, value: SiteData[K]) => setData({ ...data, [key]: value });
 
-  return <main className="admin-shell"><aside className="admin-sidebar"><Logo light /><nav>{navigation.map(([href, label], index) => <a key={href} className={index === 0 ? "active" : undefined} href={href}>{label}</a>)}</nav><button onClick={() => { sessionStorage.removeItem("iac-admin-token"); setToken(""); }}><LogOut /> Sair</button></aside>
-    <div className="admin-main"><header><div><p className="eyebrow dark">CONTEÚDO DO SITE</p><h1>Painel IAC</h1></div><div><a className="button button-outline" href="/" target="_blank"><Eye /> Visualizar site</a><button className="button button-dark" onClick={save} disabled={loading}>{loading ? <LoaderCircle className="spin" /> : <Save />} Publicar alterações</button></div></header>{message && <p className={`save-message ${message.includes("sucesso") ? "success" : "error"}`}>{message}</p>}
+  const prayerBadge = newPrayers > 0 && <span className="count-badge" aria-label={`${newPrayers} novos`}>{newPrayers}</span>;
+  const tabs = <nav className="admin-tabs" aria-label="Áreas do painel">
+    <a href="#banners" className={view === "content" ? "active" : undefined} aria-current={view === "content" ? "page" : undefined}><LayoutTemplate /> Conteúdo do site</a>
+    <a href="#pedidos" className={view === "prayers" ? "active" : undefined} aria-current={view === "prayers" ? "page" : undefined}><HandHeart /> Pedidos de oração {prayerBadge}</a>
+  </nav>;
+
+  if (view === "prayers") return <main className="admin-shell"><aside className="admin-sidebar"><Logo light /><nav><a className="active" href="#pedidos">Pedidos de oração {prayerBadge}</a>{navigation.map(([href, label]) => <a key={href} href={href}>{label}</a>)}</nav><button onClick={logout}><LogOut /> Sair</button></aside>
+    <div className="admin-main"><header><div><p className="eyebrow dark">INTERCESSÃO</p><h1>Painel IAC</h1></div><div><a className="button button-outline" href="/" target="_blank"><Eye /> Visualizar site</a></div></header>{tabs}
+      <PrayersPanel prayers={prayers} loading={prayersLoading} error={prayersError} onRefresh={loadPrayers} onStatus={setPrayerStatus} onDelete={deletePrayer} />
+    </div>
+  </main>;
+
+  return <main className="admin-shell"><aside className="admin-sidebar"><Logo light /><nav><a href="#pedidos">Pedidos de oração {prayerBadge}</a>{navigation.map(([href, label], index) => <a key={href} className={index === 0 ? "active" : undefined} href={href}>{label}</a>)}</nav><button onClick={logout}><LogOut /> Sair</button></aside>
+    <div className="admin-main"><header><div><p className="eyebrow dark">CONTEÚDO DO SITE</p><h1>Painel IAC</h1></div><div><a className="button button-outline" href="/" target="_blank"><Eye /> Visualizar site</a><button className="button button-dark" onClick={save} disabled={loading}>{loading ? <LoaderCircle className="spin" /> : <Save />} Publicar alterações</button></div></header>{tabs}{message && <p className={`save-message ${message.includes("sucesso") ? "success" : "error"}`}>{message}</p>}
       <BannersEditor data={data} setData={setData} upload={uploadImage} />
       <HomeSectionsEditor data={data} setData={setData} upload={uploadImage} />
       <PagesEditor data={data} setData={setData} upload={uploadImage} />

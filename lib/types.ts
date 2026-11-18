@@ -18,7 +18,7 @@ export type Banner = {
   buttons: LinkButton[];
 };
 
-export const sectionKinds = ["about", "marquee", "schedule", "cells", "sermons", "faceToFace", "visit", "giving", "instagram", "content"] as const;
+export const sectionKinds = ["about", "marquee", "schedule", "cells", "sermons", "faceToFace", "visit", "giving", "prayer", "instagram", "content"] as const;
 export type SectionKind = typeof sectionKinds[number];
 export type SectionTheme = "light" | "soft" | "dark";
 // Uma estrutura só para todas as seções: cada tipo usa os campos que fazem sentido para ele.
@@ -48,3 +48,7 @@ export type SiteData = {
   contact: { address: string; whatsapp: string };
   giving: { pixKeyType: PixKeyType; pixKey: string; pixCopyPaste: string; qrCode: string; bankName: string; agency: string; account: string; accountHolder: string; document: string };
 };
+
+// Pedidos de oração: guardados à parte no servidor e vistos só no painel administrativo.
+export type PrayerStatus = "new" | "praying" | "done";
+export type PrayerRequest = { id: string; name: string; contact: string; request: string; status: PrayerStatus; createdAt: string; updatedAt: string };

@@ -2,5 +2,6 @@ node_modules/
 dist/
 data/uploads/
 data/*.tmp
+data/prayers.json
 .env
 *.log

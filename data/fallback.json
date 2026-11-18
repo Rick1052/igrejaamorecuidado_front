@@ -633,6 +633,19 @@
     },
     {
       "enabled": true,
+      "eyebrow": "PEDIDOS DE ORAÇÃO",
+      "title": "Podemos orar\n*por você?*",
+      "text": "Conte para nós pelo que você precisa de oração. Nossa equipe de intercessão recebe cada pedido com carinho e sigilo.",
+      "quote": "",
+      "image": "",
+      "theme": "light",
+      "buttons": [],
+      "items": [],
+      "id": "oracao",
+      "kind": "prayer"
+    },
+    {
+      "enabled": true,
       "eyebrow": "NOSSA SEMANA EM COMUNIDADE",
       "title": "Acompanhe a IAC\n*no Instagram.*",
       "text": "",

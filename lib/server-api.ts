@@ -9,6 +9,9 @@ export async function proxyApiRequest(path: string, request?: Request) {
     const authorization = request?.headers.get("authorization");
     if (contentType) headers.set("content-type", contentType);
     if (authorization) headers.set("authorization", authorization);
+    // IP do visitante, usado pela API para limitar envios repetidos do formulário de oração.
+    const forwardedFor = request?.headers.get("x-forwarded-for") || request?.headers.get("x-real-ip");
+    if (forwardedFor) headers.set("x-forwarded-for", forwardedFor);
     const response = await fetch(`${SERVER_API_URL}${path}`, {
       method: request?.method || "GET",
       headers,

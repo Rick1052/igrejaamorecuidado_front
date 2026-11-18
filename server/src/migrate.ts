@@ -34,8 +34,15 @@ export function defaultSections(raw: Raw) {
       buttons: [button("visita-whatsapp", "Falar com a equipe", `https://wa.me/${contact.whatsapp || ""}`)] },
     { ...base, id: "contribua", kind: "giving", enabled: giving.enabled ?? false, eyebrow: "OFERTAS E CONTRIBUIÇÕES", title: "Semear também\n*é adorar.*",
       text: giving.description || "Sua generosidade sustenta a obra, alcança vidas e mantém as portas da nossa casa abertas. Contribua com alegria pelo PIX ou por transferência." },
+    prayerSection(),
     { ...base, id: "instagram", kind: "instagram", eyebrow: "NOSSA SEMANA EM COMUNIDADE", title: "Acompanhe a IAC\n*no Instagram.*" }
   ];
+}
+
+export function prayerSection() {
+  return { id: "oracao", kind: "prayer", enabled: true, eyebrow: "PEDIDOS DE ORAÇÃO", title: "Podemos orar\n*por você?*",
+    text: "Conte para nós pelo que você precisa de oração. Nossa equipe de intercessão recebe cada pedido com carinho e sigilo.",
+    quote: "", image: "", theme: "light", buttons: [], items: [] };
 }
 
 function defaultBanners(raw: Raw) {
@@ -86,6 +93,11 @@ export function migrateSite(input: unknown): Raw {
   if (!Array.isArray(raw.sections)) raw.sections = defaultSections(raw);
   if (!Array.isArray(raw.pages)) raw.pages = [];
   if (!Array.isArray(raw.menu)) raw.menu = defaultMenu(raw.sections);
+  // Sites salvos antes da seção de pedidos de oração recebem a seção logo antes do Instagram.
+  if (!raw.sections.some((section: Raw) => section.kind === "prayer")) {
+    const instagram = raw.sections.findIndex((section: Raw) => section.kind === "instagram");
+    raw.sections.splice(instagram < 0 ? raw.sections.length : instagram, 0, prayerSection());
+  }
   // Campos que agora vivem nos banners e nas seções.
   if (raw.faceToFace) for (const key of ["men", "women"]) {
     const event = raw.faceToFace[key];

@@ -17,6 +17,7 @@ const dataNotes: Partial<Record<Section["kind"], { text: string; href: string }>
   sermons: { text: "Os vídeos vêm do YouTube; a lista reserva fica em Ministrações.", href: "#mensagens-admin" },
   faceToFace: { text: "Os encontros (datas, inscrições e cards) ficam em Face a Face.", href: "#face-a-face-admin" },
   giving: { text: "A chave PIX e a conta ficam em Ofertas. A seção só aparece com PIX ou conta preenchidos.", href: "#ofertas-admin" },
+  prayer: { text: "Mostra um formulário para o visitante enviar um pedido de oração. Os pedidos recebidos aparecem em Pedidos de oração.", href: "#pedidos" },
   instagram: { text: "As publicações vêm do Instagram automaticamente.", href: "#links" },
   visit: { text: "O endereço vem de Links e contato.", href: "#links" }
 };

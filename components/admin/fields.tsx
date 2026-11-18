@@ -21,7 +21,7 @@ const maxImageBytes = 8 * 1024 * 1024;
 
 export const sectionKindLabels: Record<SectionKind, string> = {
   about: "Quem somos", marquee: "Faixa de frases", schedule: "Agenda de cultos", cells: "Células", sermons: "Mensagens",
-  faceToFace: "Face a Face", visit: "Visite-nos", giving: "Ofertas e contribuições", instagram: "Instagram", content: "Seção livre"
+  faceToFace: "Face a Face", visit: "Visite-nos", giving: "Ofertas e contribuições", prayer: "Pedidos de oração", instagram: "Instagram", content: "Seção livre"
 };
 
 export function makeId(prefix: string) {

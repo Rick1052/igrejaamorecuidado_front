@@ -7,6 +7,7 @@ import { FaceToFaceSection } from "./face-to-face-section";
 import { GivingSection } from "./giving-section";
 import { InstagramFeed } from "./instagram-feed";
 import { LogoSymbol } from "./logo";
+import { PrayerSection } from "./prayer-section";
 import { Paragraphs, RichTitle } from "./rich-text";
 import { SermonGallery } from "./sermon-gallery";
 
@@ -89,6 +90,8 @@ export function PageSection({ section, data, onHome = true }: { section: Section
       </div></section>;
     case "giving":
       return <GivingSection section={section} data={data.giving} />;
+    case "prayer":
+      return <PrayerSection section={section} />;
     case "instagram":
       return <InstagramFeed section={section} posts={data.instagramPosts} profileUrl={data.links.instagramChurch} />;
     case "content":

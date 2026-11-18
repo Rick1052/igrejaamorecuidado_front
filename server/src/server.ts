@@ -14,6 +14,9 @@ const seedFile = resolve(__dirname, "../data/site.json");
 const dataDir = process.env.DATA_DIR ? resolve(process.env.DATA_DIR) : resolve(__dirname, "../data");
 const dataFile = resolve(dataDir, "site.json");
 const uploadsDir = resolve(dataDir, "uploads");
+// Pedidos de oração ficam fora do site.json: são dados pessoais e nunca saem pela rota pública /api/site.
+const prayersFile = resolve(dataDir, "prayers.json");
+const maxStoredPrayers = 5000;
 const maxUploadBytes = 8 * 1024 * 1024;
 const port = Number(process.env.PORT || 3333);
 const adminEmail = process.env.ADMIN_EMAIL || "admin@iacguarapuava.com.br";
@@ -43,7 +46,7 @@ const bannerSchema = z.object({
   buttons: z.array(linkButtonSchema).max(2)
 });
 const sectionSchema = z.object({
-  id: z.string().regex(/^[a-z0-9-]+$/), kind: z.enum(["about", "marquee", "schedule", "cells", "sermons", "faceToFace", "visit", "giving", "instagram", "content"]), enabled: z.boolean(),
+  id: z.string().regex(/^[a-z0-9-]+$/), kind: z.enum(["about", "marquee", "schedule", "cells", "sermons", "faceToFace", "visit", "giving", "prayer", "instagram", "content"]), enabled: z.boolean(),
   eyebrow: z.string(), title: z.string(), text: z.string(), quote: z.string(), image: z.string(), theme: z.enum(["light", "soft", "dark"]),
   buttons: z.array(linkButtonSchema), items: z.array(z.object({ id, title: z.string(), text: z.string() }))
 });
@@ -75,6 +78,55 @@ const siteSchema = z.object({
   const sectionId = duplicated([...site.sections, ...site.pages.flatMap(page => page.sections)].map(section => section.id));
   if (sectionId) context.addIssue({ code: "custom", path: ["sections"], message: `A seção ${sectionId} está duplicada.` });
 });
+
+const prayerStatusSchema = z.enum(["new", "praying", "done"]);
+const prayerSchema = z.object({
+  id: z.string(), name: z.string(), contact: z.string(), request: z.string(),
+  status: prayerStatusSchema, createdAt: z.string(), updatedAt: z.string()
+});
+type Prayer = z.infer<typeof prayerSchema>;
+const newPrayerSchema = z.object({
+  name: z.string().trim().max(80, "O nome pode ter até 80 caracteres.").default(""),
+  contact: z.string().trim().max(120, "O contato pode ter até 120 caracteres.").default(""),
+  request: z.string().trim().min(3, "Escreva o seu pedido de oração.").max(2000, "O pedido pode ter até 2.000 caracteres."),
+  // Campo invisível no formulário: só robôs o preenchem.
+  website: z.string().optional()
+});
+
+async function readPrayers(): Promise<Prayer[]> {
+  try { return z.array(prayerSchema).parse(JSON.parse(await readFile(prayersFile, "utf8"))); }
+  catch (error) {
+    if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") return [];
+    throw error;
+  }
+}
+
+// Gravações em fila: dois pedidos chegando juntos não podem sobrescrever um ao outro.
+let prayersQueue: Promise<unknown> = Promise.resolve();
+function updatePrayers<T>(change: (prayers: Prayer[]) => { prayers: Prayer[]; result: T }): Promise<T> {
+  const run = prayersQueue.then(async () => {
+    const { prayers, result } = change(await readPrayers());
+    const temporary = `${prayersFile}.tmp`;
+    await writeFile(temporary, JSON.stringify(prayers, null, 2), "utf8");
+    await rename(temporary, prayersFile);
+    return result;
+  });
+  prayersQueue = run.catch(() => undefined);
+  return run;
+}
+
+// Limite simples por IP para o formulário público: 5 pedidos a cada 10 minutos.
+const prayerHits = new Map<string, number[]>();
+function allowPrayerFrom(ip: string) {
+  const windowMs = 10 * 60 * 1000;
+  const now = Date.now();
+  const recent = (prayerHits.get(ip) ?? []).filter(time => now - time < windowMs);
+  if (recent.length >= 5) { prayerHits.set(ip, recent); return false; }
+  recent.push(now);
+  prayerHits.set(ip, recent);
+  if (prayerHits.size > 10000) prayerHits.clear();
+  return true;
+}
 
 async function readSite() {
   return siteSchema.parse(migrateSite(JSON.parse(await readFile(dataFile, "utf8"))));
@@ -216,6 +268,57 @@ app.post("/api/uploads", requireAdmin, express.raw({ type: () => true, limit: ma
     const fileName = `${randomUUID()}.${extension}`;
     await writeFile(resolve(uploadsDir, fileName), buffer);
     response.status(201).json({ url: `/uploads/${fileName}` });
+  } catch (error) { next(error); }
+});
+
+app.post("/api/prayers", async (request, response, next) => {
+  try {
+    const data = newPrayerSchema.parse(request.body ?? {});
+    if (data.website) { response.status(201).json({ ok: true }); return; }
+    const forwarded = String(request.headers["x-forwarded-for"] ?? "").split(",")[0].trim();
+    if (!allowPrayerFrom(forwarded || request.ip || "unknown")) {
+      response.status(429).json({ message: "Recebemos vários pedidos seguidos. Aguarde alguns minutos e tente novamente." });
+      return;
+    }
+    const now = new Date().toISOString();
+    const prayer: Prayer = { id: randomUUID(), name: data.name, contact: data.contact, request: data.request, status: "new", createdAt: now, updatedAt: now };
+    const saved = await updatePrayers(prayers => prayers.length >= maxStoredPrayers ? { prayers, result: false } : { prayers: [prayer, ...prayers], result: true });
+    if (!saved) { response.status(503).json({ message: "Não foi possível registrar o pedido agora. Tente novamente mais tarde." }); return; }
+    response.status(201).json({ ok: true });
+  } catch (error) { next(error); }
+});
+
+app.get("/api/prayers", requireAdmin, async (_request, response, next) => {
+  try {
+    response.setHeader("Cache-Control", "no-store");
+    response.json(await readPrayers());
+  } catch (error) { next(error); }
+});
+
+app.patch("/api/prayers/:id", requireAdmin, async (request, response, next) => {
+  try {
+    const { status } = z.object({ status: prayerStatusSchema }).parse(request.body);
+    const updated = await updatePrayers(prayers => {
+      const index = prayers.findIndex(prayer => prayer.id === request.params.id);
+      if (index < 0) return { prayers, result: null };
+      const changed = [...prayers];
+      changed[index] = { ...changed[index], status, updatedAt: new Date().toISOString() };
+      return { prayers: changed, result: changed[index] };
+    });
+    if (!updated) { response.status(404).json({ message: "Pedido não encontrado." }); return; }
+    response.json(updated);
+  } catch (error) { next(error); }
+});
+
+app.delete("/api/prayers/:id", requireAdmin, async (request, response, next) => {
+  try {
+    const removed = await updatePrayers(prayers => {
+      const remaining = prayers.filter(prayer => prayer.id !== request.params.id);
+      return { prayers: remaining, result: remaining.length !== prayers.length };
+    });
+    if (!removed) { response.status(404).json({ message: "Pedido não encontrado." }); return; }
+    // 200 com corpo (e não 204): o proxy do Next repassa o corpo e não aceita resposta 204.
+    response.json({ ok: true });
   } catch (error) { next(error); }
 });
 
